@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>TikToks Guardados</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f0e8;
+    --white: #ffffff;
+    --card: #ffffff;
+    --yellow: #f5d76e;
+    --pink: #f2a7c3;
+    --blue: #a8c8f0;
+    --green: #a8d8a8;
+    --lavender: #c8b8e8;
+    --peach: #f5c4a0;
+    --text: #2a2a2a;
+    --muted: #9a9080;
+    --muted2: #b8b0a0;
+    --font: 'Nunito', sans-serif;
+    --r: 20px;
+    --r-lg: 28px;
+    --r-xl: 36px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 15px;
+    min-height: 100vh;
+    max-width: 430px;
+    margin: 0 auto;
+    padding-bottom: 100px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    padding: 56px 24px 20px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+    color: var(--text);
+  }
+  .header h1 span { color: var(--muted); font-weight: 700; font-size: 16px; display: block; margin-top: 2px; }
+  .header-right { display: flex; align-items: center; gap: 8px; }
+  .sync-pill {
+    font-size: 11px; font-weight: 700;
+    padding: 4px 10px; border-radius: 20px;
+    transition: all .3s;
+  }
+  .sync-pill.ok { background: #e8f8ee; color: #3a9a5c; }
+  .sync-pill.saving { background: #fff5e0; color: #b07a10; }
+  .sync-pill.err { background: #fde8e8; color: #c04040; }
+  .btn-random-top {
+    width: 48px; height: 48px;
+    background: var(--text);
+    border: none;
+    border-radius: 50%;
+    font-size: 22px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: transform .15s;
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  }
+  .btn-random-top:active { transform: scale(.92); }
+
+  /* ── STATS ROW ── */
+  .stats {
+    display: flex;
+    gap: 10px;
+    padding: 0 24px 20px;
+  }
+  .stat {
+    flex: 1;
+    background: var(--white);
+    border-radius: var(--r);
+    padding: 14px 10px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,.05);
+  }
+  .stat-n { font-size: 26px; font-weight: 900; line-height: 1; color: var(--text); }
+  .stat-l { font-size: 11px; font-weight: 600; color: var(--muted); margin-top: 3px; text-transform: uppercase; letter-spacing: .04em; }
+  .stat-bar { height: 4px; border-radius: 2px; margin-top: 8px; }
+
+  /* ── PROGRESS ── */
+  .progress-section { padding: 0 24px 24px; }
+  .progress-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .progress-row span { font-size: 13px; font-weight: 700; color: var(--muted); }
+  .progress-row b { color: var(--text); font-size: 15px; }
+  .progress-track { height: 10px; background: rgba(0,0,0,.07); border-radius: 5px; overflow: hidden; }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--yellow), var(--peach));
+    border-radius: 5px;
+    transition: width .6s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* ── SECTION TITLE ── */
+  .section-title { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 0 24px 10px; }
+
+  /* ── ADD FORM ── */
+  .add-form {
+    background: var(--white);
+    border-radius: var(--r-lg);
+    padding: 20px;
+    margin: 0 16px 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+  }
+  .tabs { display: flex; background: var(--bg); border-radius: var(--r); padding: 3px; margin-bottom: 16px; gap: 3px; }
+  .tab { flex: 1; height: 36px; border: none; border-radius: 16px; font-family: var(--font); font-size: 13px; font-weight: 700; color: var(--muted); background: transparent; cursor: pointer; transition: all .2s; }
+  .tab.active { background: var(--white); color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .field { background: var(--bg); border: none; border-radius: var(--r); width: 100%; padding: 14px 16px; font-family: var(--font); font-size: 14px; font-weight: 500; color: var(--text); outline: none; margin-bottom: 10px; -webkit-appearance: none; }
+  .field::placeholder { color: var(--muted2); }
+  textarea.field { min-height: 90px; resize: none; line-height: 1.6; }
+  select.field { cursor: pointer; }
+  .form-row { display: flex; gap: 8px; }
+  .form-row .field { margin-bottom: 0; }
+  .form-row select { flex: 1; }
+
+  .btn-add { width: 100%; height: 52px; background: var(--text); border: none; border-radius: var(--r); font-family: var(--font); font-size: 15px; font-weight: 800; color: white; cursor: pointer; margin-top: 12px; transition: transform .1s, opacity .15s; letter-spacing: .01em; }
+  .btn-add:active { transform: scale(.97); opacity: .9; }
+
+  .hint { font-size: 12px; color: var(--muted2); font-weight: 600; margin-top: 10px; line-height: 1.5; text-align: center; }
+
+  /* ── FILTERS ── */
+  .filters-scroll { display: flex; gap: 8px; padding: 0 24px 10px; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
+  .filters-scroll::-webkit-scrollbar { display: none; }
+  .pill { white-space: nowrap; height: 34px; padding: 0 16px; border-radius: 17px; border: none; background: var(--white); font-family: var(--font); font-size: 13px; font-weight: 700; color: var(--muted); cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,.05); transition: all .15s; flex-shrink: 0; }
+  .pill.active { background: var(--text); color: white; }
+
+  /* ── KANBAN TABS ── */
+  .ktabs { display: flex; gap: 0; padding: 0 24px; margin-bottom: 14px; border-bottom: 2px solid rgba(0,0,0,.06); }
+  .ktab { height: 38px; padding: 0 4px; margin-right: 20px; background: none; border: none; border-bottom: 3px solid transparent; font-family: var(--font); font-size: 14px; font-weight: 700; color: var(--muted); cursor: pointer; margin-bottom: -2px; transition: all .15s; display: flex; align-items: center; gap: 6px; }
+  .ktab.active { color: var(--text); border-bottom-color: var(--text); }
+  .ktab-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .ktab-cnt { font-size: 11px; font-weight: 800; background: var(--bg); padding: 1px 6px; border-radius: 10px; }
+  .ktab.active .ktab-cnt { background: var(--text); color: white; }
+
+  /* ── CARDS ── */
+  .col-content { padding: 0 16px; display: none; }
+  .col-content.active { display: block; }
+  .card { background: var(--white); border-radius: var(--r-lg); padding: 16px 18px; margin-bottom: 10px; box-shadow: 0 2px 10px rgba(0,0,0,.05); animation: cardIn .22s ease both; position: relative; overflow: hidden; }
+  @keyframes cardIn { from { opacity:0; transform: translateY(8px) scale(.98); } to { opacity:1; transform: translateY(0) scale(1); } }
+  .card-accent { position: absolute; left: 0; top: 0; bottom: 0; width: 5px; border-radius: 4px 0 0 4px; }
+  .card-inner { padding-left: 10px; }
+  .card-title { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.35; margin-bottom: 6px; }
+  .card-link { font-size: 12px; color: var(--muted2); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 8px; text-decoration: none; font-weight: 600; }
+  .card-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 12px; }
+  .badge { font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 10px; letter-spacing: .02em; }
+  .b-cat { background: #e8f0fb; color: #4a7cc7; }
+  .b-f1  { background: #e8f8ee; color: #3a9a5c; }
+  .b-f2  { background: #fff5e0; color: #b07a10; }
+  .b-f3  { background: #fde8e8; color: #c04040; }
+  .card-actions { display: flex; gap: 8px; align-items: center; }
+  .btn-mv { flex: 1; height: 36px; background: var(--bg); border: none; border-radius: var(--r); font-family: var(--font); font-size: 12px; font-weight: 800; color: var(--text); cursor: pointer; transition: background .15s; }
+  .btn-mv:active { background: #e8e3d8; }
+  .btn-del { width: 36px; height: 36px; background: #fde8e8; border: none; border-radius: 50%; font-size: 16px; color: #c04040; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s; flex-shrink: 0; }
+  .btn-del:active { background: #f8c8c8; }
+  .empty-col { text-align: center; padding: 2.5rem 1rem; color: var(--muted2); font-size: 14px; font-weight: 600; }
+  .empty-col div { font-size: 32px; margin-bottom: 8px; }
+
+  /* ── BOTTOM NAV ── */
+  .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: var(--white); border-radius: 28px 28px 0 0; padding: 12px 32px 28px; display: flex; align-items: center; justify-content: space-around; box-shadow: 0 -4px 20px rgba(0,0,0,.08); z-index: 50; }
+  .nav-btn { display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; cursor: pointer; font-family: var(--font); font-size: 10px; font-weight: 700; color: var(--muted2); padding: 4px 8px; }
+  .nav-btn.active { color: var(--text); }
+  .nav-icon { font-size: 20px; line-height: 1; }
+  .nav-center { width: 56px; height: 56px; background: var(--text); border: none; border-radius: 50%; font-size: 28px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(0,0,0,.2); transition: transform .15s; margin-top: -20px; }
+  .nav-center:active { transform: scale(.9); }
+
+  /* ── MODAL ── */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 200; display: flex; align-items: flex-end; animation: fadeIn .2s ease; }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  .modal { background: var(--white); border-radius: 32px 32px 0 0; padding: 12px 28px 48px; width: 100%; text-align: center; animation: slideUp .3s cubic-bezier(.34,1.4,.64,1); }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-handle { width: 40px; height: 4px; background: #e0d8cc; border-radius: 2px; margin: 0 auto 24px; }
+  .modal-emoji { font-size: 48px; margin-bottom: 12px; }
+  .modal-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 8px; }
+  .modal-title { font-size: 22px; font-weight: 900; line-height: 1.25; margin-bottom: 14px; color: var(--text); }
+  .modal-badges { display: flex; gap: 6px; justify-content: center; margin-bottom: 14px; }
+  .modal-link { font-size: 13px; color: var(--muted2); font-weight: 600; display: block; margin-bottom: 24px; word-break: break-all; text-decoration: none; }
+  .modal-btns { display: flex; gap: 10px; }
+  .btn-spin { flex: 1; height: 52px; background: var(--text); border: none; border-radius: var(--r); font-family: var(--font); font-size: 15px; font-weight: 800; color: white; cursor: pointer; transition: transform .1s; }
+  .btn-spin:active { transform: scale(.97); }
+  .btn-close-m { flex: 1; height: 52px; background: var(--bg); border: none; border-radius: var(--r); font-family: var(--font); font-size: 15px; font-weight: 800; color: var(--muted); cursor: pointer; }
+
+  /* ── SHEET ── */
+  .sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.3); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 150; display: flex; align-items: flex-end; animation: fadeIn .2s ease; }
+  .sheet { background: var(--white); border-radius: 32px 32px 0 0; padding: 12px 24px 48px; width: 100%; animation: slideUp .25s cubic-bezier(.34,1.3,.64,1); }
+  .sheet-handle { width:40px;height:4px;background:#e0d8cc;border-radius:2px;margin:0 auto 20px; }
+  .sheet-title { font-size:15px;font-weight:800;color:var(--text);margin-bottom:16px;text-align:center; }
+  .sheet-btn { width:100%;height:52px;background:var(--bg);border:none;border-radius:var(--r);font-family:var(--font);font-size:15px;font-weight:700;color:var(--text);cursor:pointer;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:10px; }
+  .sheet-btn:active { background:#e8e3d8; }
+  input[type=file] { display:none; }
+
+  /* ── LOADING ── */
+  .loading-screen { display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;gap:16px;color:var(--muted);font-size:15px;font-weight:700; }
+  .spinner { width:36px;height:36px;border:3px solid #e0d8cc;border-top-color:var(--text);border-radius:50%;animation:spin .8s linear infinite; }
+  @keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<div id="loading-screen" class="loading-screen">
+  <div class="spinner"></div>
+  Conectando con la nube...
+</div>
+
+<div id="main-app" style="display:none">
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <h1>Mis TikToks<span id="sub-count">0 guardados</span></h1>
+  </div>
+  <div class="header-right">
+    <span class="sync-pill ok" id="sync-pill">☁️ Guardado</span>
+    <button class="btn-random-top" onclick="pickRandom()" title="Escoger al azar">🎲</button>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat">
+    <div class="stat-n" id="s0">0</div>
+    <div class="stat-l">Pendiente</div>
+    <div class="stat-bar" style="background:var(--yellow)"></div>
+  </div>
+  <div class="stat">
+    <div class="stat-n" id="s1">0</div>
+    <div class="stat-l">Progreso</div>
+    <div class="stat-bar" style="background:var(--blue)"></div>
+  </div>
+  <div class="stat">
+    <div class="stat-n" id="s2">0</div>
+    <div class="stat-l">Hechos</div>
+    <div class="stat-bar" style="background:var(--green)"></div>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-section">
+  <div class="progress-row">
+    <span>Progreso total</span>
+    <b id="pct">0%</b>
+  </div>
+  <div class="progress-track">
+    <div class="progress-fill" id="prog" style="width:0%"></div>
+  </div>
+</div>
+
+<!-- ADD FORM -->
+<div class="section-title">Agregar</div>
+<div class="add-form">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(0)">Uno por uno</button>
+    <button class="tab" onclick="switchTab(1)">Cargar varios</button>
+  </div>
+
+  <div class="tab-panel active" id="tp0">
+    <input type="text" class="field" id="i-title" placeholder="Nombre o descripción..." />
+    <input type="text" class="field" id="i-url" placeholder="Link de TikTok (opcional)" />
+    <div class="form-row">
+      <select class="field" id="i-cat">
+        <option value="Recetas">🍳 Recetas</option>
+        <option value="Ejercicio">💪 Ejercicio</option>
+        <option value="DIY">🔨 DIY</option>
+        <option value="Moda">👗 Moda</option>
+        <option value="Tips">💡 Tips</option>
+        <option value="Actividades">🌿 Actividades</option>
+        <option value="Otro">📌 Otro</option>
+      </select>
+      <select class="field" id="i-fac">
+        <option value="1">Fácil</option>
+        <option value="2" selected>Medio</option>
+        <option value="3">Difícil</option>
+      </select>
+    </div>
+    <button class="btn-add" onclick="addOne()">+ Agregar</button>
+  </div>
+
+  <div class="tab-panel" id="tp1">
+    <textarea class="field" id="bulk-text" placeholder="Una por línea, por ejemplo:
+Hacer pan de masa madre
+Tutorial pilates, Ejercicio, Fácil
+DIY organizador, DIY, Medio
+https://tiktok.com/..."></textarea>
+    <div class="form-row">
+      <select class="field" id="b-cat">
+        <option value="Otro">Categoría default</option>
+        <option value="Recetas">🍳 Recetas</option>
+        <option value="Ejercicio">💪 Ejercicio</option>
+        <option value="DIY">🔨 DIY</option>
+        <option value="Moda">👗 Moda</option>
+        <option value="Tips">💡 Tips</option>
+        <option value="Actividades">🌿 Actividades</option>
+      </select>
+      <select class="field" id="b-fac">
+        <option value="1">Fácil</option>
+        <option value="2" selected>Medio</option>
+        <option value="3">Difícil</option>
+      </select>
+    </div>
+    <button class="btn-add" onclick="addBulk()">+ Cargar todos</button>
+    <p class="hint">Formato: título · o "título, Categoría, Dificultad"</p>
+  </div>
+</div>
+
+<!-- FILTERS -->
+<div class="section-title">Filtrar</div>
+<div class="filters-scroll" id="cat-f"></div>
+<div class="filters-scroll" id="fac-f" style="padding-bottom:16px"></div>
+
+<!-- KANBAN TABS -->
+<div class="ktabs">
+  <button class="ktab active" onclick="switchKtab(0)">
+    <div class="ktab-dot" style="background:var(--yellow)"></div>
+    Pendiente <span class="ktab-cnt" id="kc0">0</span>
+  </button>
+  <button class="ktab" onclick="switchKtab(1)">
+    <div class="ktab-dot" style="background:var(--blue)"></div>
+    En progreso <span class="ktab-cnt" id="kc1">0</span>
+  </button>
+  <button class="ktab" onclick="switchKtab(2)">
+    <div class="ktab-dot" style="background:var(--green)"></div>
+    Hechos <span class="ktab-cnt" id="kc2">0</span>
+  </button>
+</div>
+
+<div class="col-content active" id="col-0"></div>
+<div class="col-content" id="col-1"></div>
+<div class="col-content" id="col-2"></div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="nav-btn active">
+    <span class="nav-icon">🏠</span>
+    Inicio
+  </button>
+  <button class="nav-btn" onclick="showSheet()">
+    <span class="nav-icon">⚙️</span>
+    Más
+  </button>
+  <button class="nav-center" onclick="pickRandom()">🎲</button>
+  <button class="nav-btn" onclick="exportData()">
+    <span class="nav-icon">💾</span>
+    Exportar
+  </button>
+  <button class="nav-btn" onclick="document.getElementById('file-in').click()">
+    <span class="nav-icon">📂</span>
+    Importar
+  </button>
+</div>
+<input type="file" id="file-in" accept=".json" onchange="importData(event)">
+
+<!-- RANDOM MODAL -->
+<div class="overlay" id="modal" style="display:none" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-emoji">🎲</div>
+    <div class="modal-label">TikTok aleatorio</div>
+    <div class="modal-title" id="m-title"></div>
+    <div class="modal-badges" id="m-badges"></div>
+    <a class="modal-link" id="m-link" href="#" target="_blank"></a>
+    <div class="modal-btns">
+      <button class="btn-spin" onclick="pickRandom()">↻ Otro</button>
+      <button class="btn-close-m" onclick="closeModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main-app -->
+
+<script>
+// ── JSONBin config ───────────────────────────────────────────────────────────
+const API_KEY = '$2a$10$ubhQ8Me4PXc2skpjipaeeeQ4TYlh9Db5POjSnEIfRr4oR6gBtfLw.';
+const BIN_KEY = 'ttk_bin_id_v2';
+const BASE    = 'https://api.jsonbin.io/v3';
+
+async function createBin(data) {
+  const r = await fetch(`${BASE}/b`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY, 'X-Bin-Name': 'tiktoks-guardados', 'X-Bin-Private': 'true' },
+    body: JSON.stringify(data)
+  });
+  const j = await r.json();
+  return j.metadata?.id || null;
+}
+async function readBin(id) {
+  const r = await fetch(`${BASE}/b/${id}/latest`, { headers: { 'X-Master-Key': API_KEY } });
+  const j = await r.json();
+  return j.record || null;
+}
+async function writeBin(id, data) {
+  await fetch(`${BASE}/b/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+    body: JSON.stringify(data)
+  });
+}
+
+// ── State ────────────────────────────────────────────────────────────────────
+const CATS    = ['Todos','Recetas','Ejercicio','DIY','Moda','Tips','Actividades','Otro'];
+const FACS    = ['Todos','Fácil','Medio','Difícil'];
+const FAC_MAP = {1:'Fácil',2:'Medio',3:'Difícil'};
+const FAC_PARSE = {'fácil':1,'facil':1,'easy':1,'medio':2,'medium':2,'difícil':3,'dificil':3,'hard':3};
+const CAT_LIST  = ['Recetas','Ejercicio','DIY','Moda','Tips','Actividades','Otro'];
+const COL_COLORS = ['#f5d76e','#a8c8f0','#a8d8a8'];
+
+let items = [], fCat = 'Todos', fFac = 'Todos', lastRandom = null, ktab = 0;
+let binId = localStorage.getItem(BIN_KEY) || null;
+let saveTimer = null;
+
+function setSyncPill(state) {
+  const p = document.getElementById('sync-pill');
+  if (!p) return;
+  if (state === 'ok')     { p.className = 'sync-pill ok';     p.textContent = '☁️ Guardado'; }
+  if (state === 'saving') { p.className = 'sync-pill saving'; p.textContent = '⏳ Guardando...'; }
+  if (state === 'err')    { p.className = 'sync-pill err';    p.textContent = '⚠️ Sin conexión'; }
+}
+
+function scheduleSave() {
+  setSyncPill('saving');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    try {
+      const data = { items };
+      if (!binId) {
+        binId = await createBin(data);
+        if (binId) localStorage.setItem(BIN_KEY, binId);
+      } else {
+        await writeBin(binId, data);
+      }
+      setSyncPill('ok');
+    } catch(e) { setSyncPill('err'); }
+  }, 1000);
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+async function init() {
+  try {
+    if (binId) {
+      const d = await readBin(binId);
+      if (d && Array.isArray(d.items)) items = d.items;
+    } else {
+      // Try migrating old localStorage data
+      try {
+        const old = JSON.parse(localStorage.getItem('tk_v5') || '[]');
+        if (old.length) items = old;
+      } catch(e) {}
+      const data = { items };
+      binId = await createBin(data);
+      if (binId) localStorage.setItem(BIN_KEY, binId);
+    }
+  } catch(e) {
+    // fallback to localStorage if offline
+    try { items = JSON.parse(localStorage.getItem('tk_v5') || '[]'); } catch(e2) {}
+  }
+  document.getElementById('loading-screen').style.display = 'none';
+  document.getElementById('main-app').style.display = 'block';
+  render();
+}
+
+// ── App logic (identical to original) ────────────────────────────────────────
+function save() { scheduleSave(); }
+
+function switchTab(i) {
+  document.querySelectorAll('.tab').forEach((t,j) => t.classList.toggle('active', i===j));
+  document.querySelectorAll('.tab-panel').forEach((p,j) => p.classList.toggle('active', i===j));
+}
+function switchKtab(i) {
+  ktab = i;
+  document.querySelectorAll('.ktab').forEach((t,j) => t.classList.toggle('active', i===j));
+  document.querySelectorAll('.col-content').forEach((c,j) => c.classList.toggle('active', i===j));
+}
+
+function mkItem(title, url, cat, fac) {
+  return { id: Date.now() + Math.random(), title, url: url||'', cat: cat||'Otro', fac: fac||2, state: 0 };
+}
+function addOne() {
+  const t = document.getElementById('i-title').value.trim();
+  if (!t) { document.getElementById('i-title').focus(); return; }
+  items.unshift(mkItem(t, document.getElementById('i-url').value.trim(),
+    document.getElementById('i-cat').value, parseInt(document.getElementById('i-fac').value)));
+  document.getElementById('i-title').value = '';
+  document.getElementById('i-url').value = '';
+  save(); render(); switchKtab(0);
+}
+function addBulk() {
+  const raw = document.getElementById('bulk-text').value.trim();
+  if (!raw) return;
+  const defCat = document.getElementById('b-cat').value;
+  const defFac = parseInt(document.getElementById('b-fac').value);
+  const newItems = raw.split('\n').map(l => l.trim()).filter(Boolean).map(line => {
+    const parts = line.split(',').map(s => s.trim());
+    const title = parts[0]; if (!title) return null;
+    let cat = defCat, fac = defFac;
+    if (parts[1]) { const pc = CAT_LIST.find(c => c.toLowerCase() === parts[1].toLowerCase()); if (pc) cat = pc; }
+    if (parts[2]) { const pf = FAC_PARSE[parts[2].toLowerCase()]; if (pf) fac = pf; }
+    const isUrl = title.startsWith('http');
+    return mkItem(isUrl ? '(sin nombre)' : title, isUrl ? title : '', cat, fac);
+  }).filter(Boolean);
+  items = newItems.concat(items);
+  document.getElementById('bulk-text').value = '';
+  save(); render(); switchTab(0); switchKtab(0);
+}
+function move(id, dir) {
+  const i = items.find(x => x.id === id);
+  if (i) { i.state = Math.max(0, Math.min(2, i.state + dir)); save(); render(); switchKtab(i.state); }
+}
+function del(id) { items = items.filter(x => x.id !== id); save(); render(); }
+
+function pickRandom() {
+  const pool = items.filter(x => x.state < 2);
+  if (!pool.length) { alert('¡Todo hecho! 🎉'); return; }
+  const others = pool.length > 1 ? pool.filter(x => x.id !== lastRandom) : pool;
+  const pick = others[Math.floor(Math.random() * others.length)];
+  lastRandom = pick.id;
+  const fc = pick.fac===1?'b-f1':pick.fac===2?'b-f2':'b-f3';
+  document.getElementById('m-title').textContent = pick.title;
+  document.getElementById('m-badges').innerHTML =
+    `<span class="badge b-cat">${pick.cat}</span><span class="badge ${fc}">${FAC_MAP[pick.fac]}</span>`;
+  const ml = document.getElementById('m-link');
+  if (pick.url) { ml.href = pick.url; ml.textContent = pick.url; ml.style.display = 'block'; }
+  else ml.style.display = 'none';
+  document.getElementById('modal').style.display = 'flex';
+}
+function closeModal() { document.getElementById('modal').style.display = 'none'; }
+
+function showSheet() {
+  const s = document.createElement('div');
+  s.className = 'sheet-overlay';
+  s.innerHTML = `<div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Opciones</div>
+    <button class="sheet-btn" onclick="exportData();this.closest('.sheet-overlay').remove()">💾 Exportar mis TikToks</button>
+    <button class="sheet-btn" onclick="document.getElementById('file-in').click();this.closest('.sheet-overlay').remove()">📂 Importar desde archivo</button>
+    <button class="sheet-btn" onclick="if(confirm('¿Borrar todo?')){items=[];save();render();}this.closest('.sheet-overlay').remove()" style="color:#c04040">🗑️ Borrar todo</button>
+    <button class="sheet-btn" onclick="this.closest('.sheet-overlay').remove()" style="color:var(--muted)">Cancelar</button>
+  </div>`;
+  s.onclick = () => s.remove();
+  document.body.appendChild(s);
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'tiktoks.json'; a.click();
+}
+function importData(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    try {
+      const d = JSON.parse(ev.target.result);
+      if (Array.isArray(d)) { items = d.concat(items); save(); render(); }
+    } catch(err) { alert('Archivo inválido'); }
+  };
+  r.readAsText(file); e.target.value = '';
+}
+
+function render() {
+  const total = items.length, done = items.filter(x => x.state === 2).length;
+  document.getElementById('s0').textContent = items.filter(x => x.state === 0).length;
+  document.getElementById('s1').textContent = items.filter(x => x.state === 1).length;
+  document.getElementById('s2').textContent = done;
+  const pct = total ? Math.round(done / total * 100) : 0;
+  document.getElementById('pct').textContent = pct + '%';
+  document.getElementById('prog').style.width = pct + '%';
+  document.getElementById('sub-count').textContent = total + ' guardado' + (total !== 1 ? 's' : '');
+
+  ['cat-f','fac-f'].forEach((fid, fi) => {
+    const el = document.getElementById(fid); el.innerHTML = '';
+    (fi === 0 ? CATS : FACS).forEach(v => {
+      const cnt = v === 'Todos' ? items.length : fi === 0 ? items.filter(x => x.cat === v).length : items.filter(x => FAC_MAP[x.fac] === v).length;
+      const b = document.createElement('button');
+      b.className = 'pill' + ((fi === 0 ? fCat : fFac) === v ? ' active' : '');
+      b.textContent = v + (cnt ? ' (' + cnt + ')' : '');
+      b.onclick = () => { if (fi === 0) fCat = v; else fFac = v; render(); };
+      el.appendChild(b);
+    });
+  });
+
+  for (let s = 0; s < 3; s++) {
+    let vis = items.filter(x => x.state === s);
+    if (fCat !== 'Todos') vis = vis.filter(x => x.cat === fCat);
+    if (fFac !== 'Todos') vis = vis.filter(x => FAC_MAP[x.fac] === fFac);
+    document.getElementById('kc' + s).textContent = vis.length;
+    const col = document.getElementById('col-' + s);
+    if (!vis.length) {
+      const emojis = ['📋','⚡','✅'];
+      const msgs = ['Nada pendiente aquí','Nada en progreso','Nada completado aún'];
+      col.innerHTML = `<div class="empty-col"><div>${emojis[s]}</div>${msgs[s]}</div>`;
+      continue;
+    }
+    col.innerHTML = '';
+    vis.forEach(item => {
+      const d = document.createElement('div');
+      d.className = 'card';
+      const fc = item.fac===1?'b-f1':item.fac===2?'b-f2':'b-f3';
+      const prev = item.state > 0 ? `<button class="btn-mv" onclick="move(${item.id},-1)">← Atrás</button>` : '';
+      const next = item.state < 2 ? `<button class="btn-mv" onclick="move(${item.id},1)">${item.state===0?'Empezar →':'✓ Listo'}</button>` : '';
+      const link = item.url ? `<a class="card-link" href="${item.url}" target="_blank">🔗 ${item.url}</a>` : '';
+      d.innerHTML = `<div class="card-accent" style="background:${COL_COLORS[item.state]}"></div>
+        <div class="card-inner">
+          <div class="card-title">${item.title}</div>
+          ${link}
+          <div class="card-badges"><span class="badge b-cat">${item.cat}</span><span class="badge ${fc}">${FAC_MAP[item.fac]}</span></div>
+          <div class="card-actions">${prev}${next}<button class="btn-del" onclick="del(${item.id})">×</button></div>
+        </div>`;
+      col.appendChild(d);
+    });
+  }
+}
+
+document.getElementById('i-title').addEventListener('keydown', e => { if (e.key === 'Enter') addOne(); });
+init();
+</script>
+</body>
+</html>
